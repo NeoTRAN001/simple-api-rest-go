@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -12,6 +11,7 @@ import (
 	"platzi.com/go/rest-ws/models"
 	"platzi.com/go/rest-ws/repository"
 	"platzi.com/go/rest-ws/server"
+	"platzi.com/go/rest-ws/utils"
 )
 
 const (
@@ -128,14 +128,7 @@ func LoginHandler(s server.Server) http.HandlerFunc {
 
 func MeHandler(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tokenString := strings.TrimSpace(r.Header.Get("Authorization"))
-
-		token, err := jwt.ParseWithClaims(
-			tokenString, &models.AppClaims{},
-			func(token *jwt.Token) (interface{}, error) {
-				return []byte(s.Config().JWTSecret), nil
-			},
-		)
+		token, err := utils.Validate(s, r.Header.Get("Authorization"))
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
